@@ -1,0 +1,132 @@
+services:
+  master:
+    build: .
+    container_name: taskbalancer-master
+    command: java -cp bin com.taskbalancer.master.Master 8080
+    networks:
+      master-network:
+      worker-network-1:
+      worker-network-2:
+      worker-network-3:
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "netstat", "-an", "|", "grep", "8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  worker-1:
+    build: .
+    container_name: taskbalancer-worker-1
+    command: java -cp bin com.taskbalancer.worker.Worker worker-1 master 8080 4
+    networks:
+      master-network:
+      worker-network-1:
+    depends_on:
+      - master
+    healthcheck:
+      test: ["CMD", "ps", "aux", "|", "grep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  worker-2:
+    build: .
+    container_name: taskbalancer-worker-2
+    command: java -cp bin com.taskbalancer.worker.Worker worker-2 master 8080 4
+    networks:
+      master-network:
+      worker-network-2:
+    depends_on:
+      - master
+    healthcheck:
+      test: ["CMD", "ps", "aux", "|", "grep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  worker-3:
+    build: .
+    container_name: taskbalancer-worker-3
+    command: java -cp bin com.taskbalancer.worker.Worker worker-3 master 8080 4
+    networks:
+      master-network:
+      worker-network-3:
+    depends_on:
+      - master
+    healthcheck:
+      test: ["CMD", "ps", "aux", "|", "grep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  worker-4:
+    build: .
+    container_name: taskbalancer-worker-4
+    command: java -cp bin com.taskbalancer.worker.Worker worker-4 master 8080 4
+    networks:
+      master-network:
+      worker-network-1:
+    depends_on:
+      - master
+    profiles:
+      - load-test
+      - scalability
+
+  worker-5:
+    build: .
+    container_name: taskbalancer-worker-5
+    command: java -cp bin com.taskbalancer.worker.Worker worker-5 master 8080 4
+    networks:
+      master-network:
+      worker-network-2:
+    depends_on:
+      - master
+    profiles:
+      - load-test
+      - scalability
+
+  client:
+    build: .
+    container_name: taskbalancer-client
+    command: java -cp bin com.taskbalancer.client.Client master 8080
+    networks:
+      master-network:
+      client-network:
+    depends_on:
+      - master
+    profiles:
+      - client
+
+networks:
+  master-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
+  worker-network-1:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.2.0/24
+          gateway: 192.168.2.1
+  worker-network-2:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.3.0/24
+          gateway: 192.168.3.1
+  worker-network-3:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.4.0/24
+          gateway: 192.168.4.1
+  client-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.5.0/24
+          gateway: 192.168.5.1

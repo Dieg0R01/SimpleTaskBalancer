@@ -32,14 +32,14 @@ No se usan librerías externas. Todo implementado con la SDK Java estándar.
 
 ## Partes implicadas
 
-| **Cliente**                | **Master / Balanceador**               | **Worker**                          |
-| -------------------------- | -------------------------------------- | ----------------------------------- |
-| • Envía tareas al Master.  | • Endpoint de recepción de tareas.    | • Ejecuta tareas en paralelo.      |
-| • Recibe resultado final.  | • Cola de tareas.                      | • Pool de hilos concurrentes.      |
-|                            | • Registro y gestión de workers.       | • Envía heartbeats al Master.      |
-|                            | • Algoritmo de balanceo.               | • Devuelve resultados.             |
-|                            | • Reintentos y timeouts.               |                                     |
-|                            | • Componente de logging y métricas.    |                                     |
+| **Cliente**           | **Master / Balanceador**        | **Worker**                |
+| --------------------------- | ------------------------------------- | ------------------------------- |
+| • Envía tareas al Master. | • Endpoint de recepción de tareas.  | • Ejecuta tareas en paralelo.  |
+| • Recibe resultado final.  | • Cola de tareas.                    | • Pool de hilos concurrentes.  |
+|                             | • Registro y gestión de workers.    | • Envía heartbeats al Master. |
+|                             | • Algoritmo de balanceo.             | • Devuelve resultados.         |
+|                             | • Reintentos y timeouts.             |                                 |
+|                             | • Componente de logging y métricas. |                                 |
 
 ## Diseño concurrente (decisiones)
 
@@ -83,3 +83,108 @@ Para abstraer las tareas en contraposición a un catálogo cerrado de tipos de t
 
 ![Diseño](diagram.png)
 
+---
+
+# 🚀 Instalación y Ejecución
+
+Este proyecto usa **Maven** para la gestión de dependencias y construcción. Maven funciona de manera idéntica en **Windows, Mac y Linux**.
+
+## Requisitos previos
+
+- **Java JDK 8** o superior
+- **Maven 3.6+** (opcional, puedes usar el wrapper incluido)
+
+---
+
+## 📦 Compilación
+
+### Compilar el proyecto
+
+```bash
+mvn clean compile
+```
+
+---
+
+## 🧪 Ejemplo de uso completo
+
+### En Windows (PowerShell o CMD)
+
+```powershell
+# Terminal 1 - Master
+mvn exec:java@master -Dmaster.port=8080
+
+# Terminal 2 - Worker 1
+mvn exec:java@worker -Dworker.id=worker-1 -Dmax.tasks=4
+
+# Terminal 3 - Worker 2
+mvn exec:java@worker -Dworker.id=worker-2 -Dmax.tasks=8
+
+# Terminal 4 - Cliente
+mvn exec:java@client
+```
+
+### En Mac/Linux (Terminal)
+
+```bash
+# Terminal 1 - Master
+mvn exec:java@master -Dmaster.port=8080
+
+# Terminal 2 - Worker 1
+mvn exec:java@worker -Dworker.id=worker-1 -Dmax.tasks=4
+
+# Terminal 3 - Worker 2
+mvn exec:java@worker -Dworker.id=worker-2 -Dmax.tasks=8
+
+# Terminal 4 - Cliente
+mvn exec:java@client
+```
+
+---
+
+## 🧪 Testing
+
+### Compilar tests
+
+```bash
+mvn clean compile test-compile
+```
+
+### Ejecutar tests unitarios
+
+```bash
+# Ejecutar todos los tests
+mvn test
+
+# Ejecutar un test específico
+mvn test -Dtest=TaskExecutorTest
+```
+
+### Ejecutar tests de integración (requiere Docker)
+
+Los tests de integración levantan contenedores Docker automáticamente usando Testcontainers.
+
+**Requisitos:**
+- Docker Desktop o Docker Engine ejecutándose
+- Código compilado (`mvn clean compile`)
+
+```bash
+# Compilar proyecto (requisito previo)
+mvn clean compile
+
+# Ejecutar todos los tests (incluye tests de integración)
+mvn test
+
+# Ejecutar solo tests de integración
+mvn test -Dtest="com.taskbalancer.integration.*"
+
+# Ejecutar un test de integración específico
+mvn test -Dtest=DistributedSystemTest
+mvn test -Dtest=LoadBalancingTest
+mvn test -Dtest=ResilienceTest
+mvn test -Dtest=ConcurrencyTest
+```
+
+**Nota:** Los tests de integración construyen la imagen Docker automáticamente durante la ejecución. No es necesario ejecutar `docker-compose build` manualmente.
+
+---
